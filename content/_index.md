@@ -4,7 +4,7 @@ description = 'About Your Name, projects, and contact details.'
 +++
 ## About
 
-Hi, I am Oskar. A CS Student at TUM. I am interested in DevOps, infrastructure and networking.
+Hi, I am Oskar. A CS Student at TUM. I am interested in DevOps, infrastructure and homelabing.
 
 ## Projects
 
