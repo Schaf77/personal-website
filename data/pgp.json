@@ -1,0 +1,13 @@
+{
+  "keys": [
+    {
+      "email": "oskar@onderka.dev",
+      "fingerprint": "79DAFF063AD8FF3A2AD2EAD6F42BBE18E3D3D649",
+      "created": "2026-10-29",
+      "expires": "2027-10-29",
+      "download": "/keys/79DAFF063AD8FF3A2AD2EAD6F42BBE18E3D3D649.asc",
+      "hash": "rx3snbxpfn4t3ifinafa1rs19jenkdfo",
+      "wkd": "https://onderka.dev/.well-known/openpgpkey/hu/rx3snbxpfn4t3ifinafa1rs19jenkdfo?l=oskar"
+    }
+  ]
+}

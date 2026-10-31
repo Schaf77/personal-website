@@ -1,0 +1,6 @@
+[submodule "themes/nojs"]
+	path = themes/nojs
+	url = https://git.andy.sb/nojs.git
+[submodule "themes/rewired"]
+	path = themes/rewired
+	url = https://github.com/RigleGit/rewired.git

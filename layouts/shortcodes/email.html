@@ -1,0 +1,4 @@
+{{- $address := .Get 0 -}}
+{{- $href := partial "email-entities.html" (printf "mailto:%s" $address) -}}
+{{- $text := partial "email-entities.html" $address -}}
+{{- printf `<a href="%s">%s</a>` $href $text | safeHTML -}}

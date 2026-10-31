@@ -1,0 +1,6 @@
+{{- /* Encode ASCII addresses without changing the text browsers display or copy. */ -}}
+{{- $encoded := "" -}}
+{{- range strings.Split . "" -}}
+  {{- $encoded = printf "%s&#%d;" $encoded (index . 0) -}}
+{{- end -}}
+{{- return ($encoded | safeHTML) -}}

@@ -1,0 +1,27 @@
+baseURL = 'https://onderka.dev/'
+locale = 'en-us'
+title = 'onderka.dev'
+theme = "nojs"
+staticDir = ['static', '.wellknowndir']
+disableKinds = ['taxonomy', 'term', 'RSS']
+
+[menus]
+[[menus.main]]
+name = 'Home'
+pageRef = '/'
+weight = 1
+[[menus.main]]
+name = 'PGP keys'
+pageRef = '/keys'
+weight = 2
+
+[outputs]
+home = ['HTML']
+page = ['HTML']
+
+[markup.goldmark.renderer]
+unsafe = false
+
+# Preserve numeric email entities, including when building with --minify.
+[minify]
+disableHTML = true

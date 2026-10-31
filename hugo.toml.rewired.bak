@@ -1,0 +1,103 @@
+baseURL = "https://onderka.dev/"
+title = "onderka.dev"
+theme = "rewired"
+
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = false
+
+[taxonomies]
+tag = "tags"
+category = "categories"
+
+[params]
+blogPageSize = 5
+
+[params.toc]
+enabled = true
+ordered = true
+startLevel = 1
+endLevel = 3
+
+[languages]
+
+[languages.de]
+label = "Deutsch"
+locale = "de-DE"
+weight = 1
+contentDir = "content/de"
+title = "onderka.dev"
+
+[languages.de.params]
+author = "Oskar Onderka"
+descriptionLines = ["Informatik student @ TUM"]
+tagline = "Wer denkt, dass Cyber Security teuer ist, sollte es mal ohne versuchen"
+
+[languages.de.params.footer]
+text = ''
+prompt = "user@onderka.dev:~$"
+
+[[languages.de.menus.main]]
+name = "Startseite"
+pageRef = "/"
+weight = 10
+
+[[languages.de.menus.main]]
+name = "Projekte"
+pageRef = "/projects"
+weight = 30
+
+[[languages.de.menus.main]]
+name = "Über mich"
+pageRef = "/about"
+weight = 40
+
+[[languages.de.params.social]]
+name = "GitHub"
+url = "https://github.com/Schaf77"
+icon = "fa-brands fa-github"
+
+[[languages.de.params.social]]
+name = "Email"
+url = "mailto:contact@onderka.dev"
+icon = "fa-regular fa-envelope"
+
+[languages.en]
+label = "English"
+locale = "en-US"
+weight = 2
+contentDir = "content/en"
+title = "onderka.dev"
+
+[languages.en.params]
+author = "Oskar Onderka"
+descriptionLines = ["CS student @ TUM"]
+tagline = "If you think that cyber security is expensive, try having none"
+
+[languages.en.params.footer]
+text = 'onderka.dev // made with [Hugo](https://gohugo.io/)'
+prompt = "user@mywebsite.dev:~$"
+
+[[languages.en.menus.main]]
+name = "home"
+pageRef = "/"
+weight = 10
+
+[[languages.en.menus.main]]
+name = "projects"
+pageRef = "/projects"
+weight = 30
+
+[[languages.en.menus.main]]
+name = "about"
+pageRef = "/about"
+weight = 40
+
+[[languages.en.params.social]]
+name = "GitHub"
+url = "https://github.com/Schaf77"
+icon = "fa-brands fa-github"
+
+[[languages.en.params.social]]
+name = "Email"
+url = "mailto:contact@onderka.dev"
+icon = "fa-regular fa-envelope"

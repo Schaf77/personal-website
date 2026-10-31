@@ -1,0 +1,35 @@
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ range hugo.Data.pgp.keys }}
+  <article>
+    <h2>{{ partial "email-entities.html" .email }}</h2>
+    <dl>
+      <dt>Fingerprint</dt>
+      <dd><code>{{ replaceRE `(.{4})` `$1 ` .fingerprint }}</code></dd>
+      <dt>Created</dt>
+      <dd>{{ .created }}</dd>
+      <dt>Expires</dt>
+      <dd>{{ .expires }}</dd>
+    </dl>
+    <p><a href="{{ .download | relURL }}" download rel="pgpkey">Download public key</a>
+    <details>
+      <summary>Show armored public key</summary>
+      <pre><code>{{ os.ReadFile (path.Join "static" (strings.TrimPrefix "/" .download)) }}</code></pre>
+    </details>
+    <details>
+      <summary>Import or discover this key</summary>
+      <p>After downloading the key:</p>
+      <pre><code>gpg --import {{ path.Base .download }}</code></pre>
+      <p>Using WKD:</p>
+      <pre><code>gpg --auto-key-locate clear,wkd --locate-keys {{ partial "email-entities.html" .email }}</code></pre>
+      <p>Binary WKD file: <a href="{{ .wkd }}"><code>{{ .hash }}</code></a></p>
+    </details>
+  </article>
+  {{ else }}
+  <p>No public keys published yet.</p>
+  {{ end }}
+  <h2>WKD</h2>
+  <p>Compatible email software can discover published keys automatically through
+    Web Key Directory (WKD), if it searches at <code>.well-known/openpgpkey/hu/rx3snbxpfn4t3ifinafa1rs19jenkdfo?l=oskar</code> or <code>openpgpkey.onderka.dev</code>.</p>
+{{ end }}
