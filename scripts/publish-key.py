@@ -98,7 +98,7 @@ def prepare(email, key_file, root=ROOT):
         key=lambda item: item["email"],
     )
     download_path = root / "static" / download.lstrip("/")
-    wkd_dir = root / ".wellknowndir/.well-known/openpgpkey"
+    wkd_dir = root / ".well-known/openpgpkey"
     download_path.parent.mkdir(parents=True, exist_ok=True)
     (wkd_dir / "hu").mkdir(parents=True, exist_ok=True)
     download_path.write_bytes(armored)

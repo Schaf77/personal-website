@@ -61,7 +61,7 @@ directory. It creates:
 ```text
 static/keys/FULL_FINGERPRINT.asc             # Public, ASCII-armored download
 data/pgp.json                              # Fingerprint, dates, and page links
-.wellknowndir/.well-known/openpgpkey/
+.well-known/openpgpkey/
 ├── policy                                 # Empty, required WKD policy file
 └── hu/HASH                                 # Binary public key for the mailbox
 ```
@@ -80,9 +80,9 @@ if you no longer want to host them. Rebuild and redeploy after any change.
 
 ## WKD hosting
 
-`.wellknowndir` is the source directory requested for WKD. Hugo’s `staticDir`
-setting merges it into the site root, alongside `static/`. The public URL is
-**`/.well-known/`**, not `/.wellknowndir/`. The policy file is intentionally empty.
+The top-level `.well-known/` directory contains the WKD files. Hugo mounts it at
+`static/.well-known` so it is published as `/.well-known/`, alongside files from
+`static/`. The policy file is intentionally empty.
 The helper creates the `hu/` directory when you prepare your first key.
 
 This template implements the **direct method**:
@@ -135,6 +135,86 @@ hugo --cleanDestinationDir --minify
 Deploy the contents of `public/` with your preferred static host. Do not deploy
 the repository itself. Generated output and Hugo cache/lock files are ignored
 by Git. `--cleanDestinationDir` removes stale generated pages from earlier builds.
+
+## Docker behind Nginx Proxy Manager
+
+The included `compose.yaml` runs the official `nginx:stable-alpine` image with
+`public/` and `deploy/nginx.conf` mounted read-only. Nginx Proxy Manager (NPM)
+handles HTTPS and forwards to the container over HTTP on a shared Docker network.
+The site container does not publish any host ports.
+
+On the VPS, use a directory such as `/srv/onderka.dev` containing:
+
+```text
+compose.yaml
+.env
+deploy/nginx.conf
+public/                 # Complete Hugo build, including .well-known/
+```
+
+Copy `.env.example` to `.env` and set `NPM_NETWORK` to an existing user-defined
+Docker network joined by your NPM container, for example `npm_default`. To list
+the networks joined by NPM, replace `NPM_CONTAINER` with its container name:
+
+```sh
+docker inspect NPM_CONTAINER --format '{{json .NetworkSettings.Networks}}'
+```
+
+NPM and the site must share the selected network. The external network is reused
+by this Compose project; it is not created or removed by it. See
+[NPM's Docker network guidance](https://nginxproxymanager.com/advanced-config/#best-practice-use-a-docker-network).
+
+Build locally, then upload to that dedicated directory. Replace `USER` and
+`VPS_IP` with your SSH details, and create `/srv/onderka.dev` on the VPS with write
+access for your SSH user first:
+
+```sh
+hugo --cleanDestinationDir --minify
+rsync -avz --chmod=D755,F644 compose.yaml .env.example USER@VPS_IP:/srv/onderka.dev/
+rsync -avz --chmod=D755,F644 deploy/ USER@VPS_IP:/srv/onderka.dev/deploy/
+rsync -avz --delete --chmod=D755,F644 public/ USER@VPS_IP:/srv/onderka.dev/public/
+```
+
+The final command synchronizes only the dedicated `public/` directory, including
+hidden WKD files. On the VPS, configure `.env` and start the service:
+
+```sh
+cd /srv/onderka.dev
+cp .env.example .env
+# Edit .env and set NPM_NETWORK to your NPM network before continuing.
+docker compose config --quiet
+docker compose up -d
+docker compose exec onderka-site nginx -t
+```
+
+In NPM, create or update the proxy host:
+
+- **Domain:** `onderka.dev`
+- **Scheme:** `http`
+- **Forward hostname:** `onderka-site`
+- **Forward port:** `80`
+- **Access:** publicly accessible, including the WKD paths
+- **SSL:** select your existing certificate and enable Force SSL
+- **Cache Assets:** leave disabled so key updates are served immediately
+
+NPM should forward the original paths to the container. The included Nginx
+configuration serves the empty WKD policy, binary keys with the appropriate MIME
+type and CORS header, and armored downloads as plain text. It uses relative
+directory redirects to preserve HTTPS through the proxy.
+
+Check the public URLs with the commands in the WKD hosting section above.
+For content updates, rerun the local build and the `public/` rsync command;
+the running container sees updated files without a restart. Keep the mounted
+`public/` directory in place and update its contents. After editing
+`deploy/nginx.conf`, upload it and run:
+
+```sh
+docker compose exec onderka-site nginx -t
+docker compose restart onderka-site
+```
+
+To update the Nginx image later, run `docker compose pull` followed by
+`docker compose up -d`.
 
 Run the key-publishing integration tests with `python3 -m unittest discover -s tests -v`.
 They create throwaway keys in a temporary directory, separate from your keyring.

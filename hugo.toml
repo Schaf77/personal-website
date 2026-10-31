@@ -2,8 +2,15 @@ baseURL = 'https://onderka.dev/'
 locale = 'en-us'
 title = 'onderka.dev'
 theme = "nojs"
-staticDir = ['static', '.wellknowndir']
 disableKinds = ['taxonomy', 'term', 'RSS']
+
+[[module.mounts]]
+source = 'static'
+target = 'static'
+
+[[module.mounts]]
+source = '.well-known'
+target = 'static/.well-known'
 
 [menus]
 [[menus.main]]

@@ -60,7 +60,7 @@ class PublishKeyTests(unittest.TestCase):
         self.assertEqual(entry["fingerprint"], self.fingerprint)
         download = self.root / "static" / entry["download"].lstrip("/")
         self.assertTrue(download.read_bytes().startswith(b"-----BEGIN PGP PUBLIC KEY BLOCK-----"))
-        wkd = self.root / ".wellknowndir/.well-known/openpgpkey"
+        wkd = self.root / ".well-known/openpgpkey"
         self.assertEqual((wkd / "policy").read_bytes(), b"")
         binary_file = wkd / "hu" / entry["hash"]
         self.assertFalse(binary_file.read_bytes().startswith(b"-----BEGIN"))
@@ -84,7 +84,7 @@ class PublishKeyTests(unittest.TestCase):
             publisher.prepare("missing@example.org", self.public, self.root)
         self.assertEqual(json.loads((self.root / "data/pgp.json").read_text()), {"keys": []})
         self.assertFalse((self.root / "static").exists())
-        self.assertFalse((self.root / ".wellknowndir").exists())
+        self.assertFalse((self.root / ".well-known").exists())
 
     def test_rejects_secret_key(self):
         secret = self.root / "secret.asc"
