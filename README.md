@@ -128,9 +128,37 @@ and [GnuPG export/filter documentation](https://www.gnupg.org/documentation/manu
 
 ## Build
 
+Use the Makefile to build with Docker, independent of the host's Hugo version:
+
+```sh
+make          # Initialize themes and build public/ with the pinned Hugo image.
+make deploy   # Build, then start or update the Nginx site container.
+```
+
+For an already running site, `make` is enough to publish content changes through
+the mounted `public/` directory. The build checks that both HTML pages exist.
+
+The theme requires Hugo **0.158.0 or newer**. Older distribution packages such as
+Ubuntu's Hugo 0.123.7 cannot find these layouts and produce static files without
+the HTML pages, which causes Nginx to return 403 for `/`.
+
 ```sh
 hugo --cleanDestinationDir --minify
 ```
+
+Alternatively, build with the pinned Hugo 0.169.0 Docker service. Initialize the
+theme submodules on the host first; the build container has networking disabled.
+
+```sh
+git submodule update --init --recursive
+docker compose run --rm --no-deps hugo-build
+test -s public/index.html
+```
+
+The builder writes into the existing `public/` directory and exits. Its `build`
+profile keeps it out of a normal `docker compose up -d`. It runs as root by
+default for root-managed VPS checkouts; set `HUGO_USER` to your host UID:GID in
+`.env` when using a non-root checkout.
 
 Deploy the contents of `public/` with your preferred static host. Do not deploy
 the repository itself. Generated output and Hugo cache/lock files are ignored
@@ -142,6 +170,20 @@ The included `compose.yaml` runs the official `nginx:stable-alpine` image with
 `public/` and `deploy/nginx.conf` mounted read-only. Nginx Proxy Manager (NPM)
 handles HTTPS and forwards to the container over HTTP on a shared Docker network.
 The site container does not publish any host ports.
+
+If you clone the full repository onto the VPS, you can build there using Docker
+instead of uploading a local build. After configuring `.env`, run:
+
+```sh
+git submodule update --init --recursive
+docker compose run --rm --no-deps hugo-build
+test -s public/index.html
+docker compose up -d onderka-site
+```
+
+`public/` is Git-ignored, so cloning or pulling the repository alone does not
+publish updated HTML. Run the builder again after content or template changes.
+The following upload workflow is an alternative for building on your own machine.
 
 On the VPS, use a directory such as `/srv/onderka.dev` containing:
 

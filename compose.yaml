@@ -1,4 +1,17 @@
 services:
+  hugo-build:
+    image: ghcr.io/gohugoio/hugo:v0.169.0
+    profiles: [build]
+    user: "${HUGO_USER:-0:0}"
+    working_dir: /project
+    entrypoint: [hugo]
+    command: [--cleanDestinationDir, --minify, --panicOnWarning]
+    network_mode: none
+    volumes:
+      - type: bind
+        source: .
+        target: /project
+
   onderka-site:
     image: nginx:stable-alpine
     restart: unless-stopped
