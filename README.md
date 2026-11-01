@@ -146,11 +146,13 @@ Use the Makefile to build with Docker, independent of the host's Hugo version:
 
 ```sh
 make          # Initialize themes and build public/ with the pinned Hugo image.
-make deploy   # Build, then start or update the Nginx site container.
+make deploy   # Build, then recreate the Nginx site container to apply its config.
 ```
 
 For an already running site, `make` is enough to publish content changes through
-the mounted `public/` directory. The build checks that both HTML pages exist.
+the mounted `public/` directory. `make deploy` also recreates the container so
+changes to the mounted Nginx configuration take effect; this briefly interrupts
+service. The build checks that both HTML pages exist.
 
 The theme requires Hugo **0.158.0 or newer**. Older distribution packages such as
 Ubuntu's Hugo 0.123.7 cannot find these layouts and produce static files without

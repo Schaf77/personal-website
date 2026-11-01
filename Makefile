@@ -8,4 +8,4 @@ build:
 	test -s public/keys/index.html
 
 deploy: build
-	docker compose up -d onderka-site
+	docker compose up -d --force-recreate onderka-site
