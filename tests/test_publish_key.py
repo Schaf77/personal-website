@@ -70,6 +70,13 @@ class PublishKeyTests(unittest.TestCase):
         self.assertNotIn("other@example.org", listing)
         self.assertIn("sub:", listing)  # The encryption subkey must survive filtering.
         self.assertFalse(any(line.startswith(("sec:", "ssb:")) for line in listing.splitlines()))
+        advanced = wkd / "example.org"
+        self.assertTrue((advanced / "policy").is_file(), "Advanced WKD policy is missing")
+        self.assertEqual((advanced / "policy").read_bytes(), b"")
+        self.assertEqual((advanced / "hu" / entry["hash"]).read_bytes(), binary_file.read_bytes())
+        self.assertEqual(entry["wkd"],
+                         "https://openpgpkey.example.org/.well-known/openpgpkey/example.org/hu/"
+                         "im4cc8qhazwkfsi65a8us1bc5gzk1o4p?l=hello")
         self.assertEqual(json.loads((self.root / "data/pgp.json").read_text())["keys"], [entry])
 
     def test_add_mailbox_and_update_without_duplicate(self):
@@ -122,6 +129,11 @@ class PublishKeyTests(unittest.TestCase):
         output = self.root / "public"
         self.assertEqual((output / ".well-known/openpgpkey/policy").read_bytes(), b"")
         self.assertGreater((output / ".well-known/openpgpkey/hu" / entry["hash"]).stat().st_size, 0)
+        self.assertTrue((output / ".well-known/openpgpkey/example.org/policy").is_file(),
+                        "Hugo did not publish advanced WKD")
+        self.assertEqual((output / ".well-known/openpgpkey/example.org/policy").read_bytes(), b"")
+        self.assertEqual((output / ".well-known/openpgpkey/example.org/hu" / entry["hash"]).read_bytes(),
+                         (output / ".well-known/openpgpkey/hu" / entry["hash"]).read_bytes())
         self.assertTrue((output / entry["download"].lstrip("/")).is_file())
         page = (output / "keys/index.html").read_text()
         self.assertIn(f'href="{entry["download"]}"', page)

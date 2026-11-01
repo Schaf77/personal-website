@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare public-key downloads and direct-method WKD files for this Hugo site."""
+"""Prepare public-key downloads and advanced/direct WKD files for this Hugo site."""
 
 import argparse
 import base64
@@ -90,7 +90,7 @@ def prepare(email, key_file, root=ROOT):
         "expires": key_date(primary[6]),
         "download": download,
         "hash": hashed,
-        "wkd": f"https://{domain}/.well-known/openpgpkey/hu/{hashed}?l={quote(local, safe='')}",
+        "wkd": f"https://openpgpkey.{domain}/.well-known/openpgpkey/{domain}/hu/{hashed}?l={quote(local, safe='')}",
     }
     # Replace the active key for this mailbox; other mailboxes remain published.
     data["keys"] = sorted(
@@ -100,10 +100,11 @@ def prepare(email, key_file, root=ROOT):
     download_path = root / "static" / download.lstrip("/")
     wkd_dir = root / ".well-known/openpgpkey"
     download_path.parent.mkdir(parents=True, exist_ok=True)
-    (wkd_dir / "hu").mkdir(parents=True, exist_ok=True)
     download_path.write_bytes(armored)
-    (wkd_dir / "hu" / hashed).write_bytes(binary)
-    (wkd_dir / "policy").touch()
+    for directory in (wkd_dir, wkd_dir / domain):
+        (directory / "hu").mkdir(parents=True, exist_ok=True)
+        (directory / "hu" / hashed).write_bytes(binary)
+        (directory / "policy").touch()
     data_file.write_text(json.dumps(data, indent=2) + "\n")
     return entry
 

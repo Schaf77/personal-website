@@ -62,8 +62,11 @@ directory. It creates:
 static/keys/FULL_FINGERPRINT.asc             # Public, ASCII-armored download
 data/pgp.json                              # Fingerprint, dates, and page links
 .well-known/openpgpkey/
-├── policy                                 # Empty, required WKD policy file
-└── hu/HASH                                 # Binary public key for the mailbox
+├── policy                                 # Direct WKD policy
+├── hu/HASH                                # Direct WKD binary public key
+└── example.org/
+    ├── policy                             # Advanced WKD policy
+    └── hu/HASH                            # Same binary public key
 ```
 
 The `/keys/` page automatically lists downloads, complete fingerprints, dates,
@@ -82,23 +85,34 @@ if you no longer want to host them. Rebuild and redeploy after any change.
 
 The top-level `.well-known/` directory contains the WKD files. Hugo mounts it at
 `static/.well-known` so it is published as `/.well-known/`, alongside files from
-`static/`. The policy file is intentionally empty.
-The helper creates the `hu/` directory when you prepare your first key.
+`static/`. The policy files are intentionally empty.
+The helper creates both layouts when you prepare a key and reports the advanced
+WKD URL.
 
-This template implements the **direct method**:
+This site implements the **advanced method** and retains the **direct method**.
+For `hello@example.org`, the advanced URLs are:
+
+```text
+https://openpgpkey.example.org/.well-known/openpgpkey/example.org/policy
+https://openpgpkey.example.org/.well-known/openpgpkey/example.org/hu/HASH?l=hello
+```
+
+Point `openpgpkey.example.org` at the same host and forward these paths unchanged
+through the reverse proxy. Serve it over HTTPS with a valid certificate for the
+subdomain. For this deployment, `openpgpkey.onderka.dev` forwards to the same
+`onderka-site:80` container as `onderka.dev`.
+
+The direct URLs remain available at the email domain:
 
 ```text
 https://example.org/.well-known/openpgpkey/policy
 https://example.org/.well-known/openpgpkey/hu/HASH?l=hello
 ```
 
-Serve the site at the root of the **email domain**, over HTTPS with a valid
-certificate. A site at `www.example.org` or under `/personal/` cannot provide direct
-WKD for `hello@example.org` unless the email-domain host independently serves the
-correct paths. For direct-method discovery, `openpgpkey.example.org` must not
-resolve: clients try the advanced method first and may not fall back after an
-HTTP failure. If you already use an advanced WKD service, keep that service and
-configure it separately rather than replacing it with this direct-method layout.
+Serve direct WKD at the root of the **email domain**, over HTTPS with a valid
+certificate. Clients try advanced WKD first and only fall back to direct WKD if
+the `openpgpkey` subdomain does not resolve; an HTTP failure on the advanced host
+does not trigger fallback.
 
 Configure your web server/CDN to:
 
@@ -116,9 +130,9 @@ files. Ensure deployment/sync tooling includes hidden directories. For example,
 After deployment, check the real URLs and automatic discovery:
 
 ```sh
-curl -i https://example.org/.well-known/openpgpkey/policy
+curl -i https://openpgpkey.example.org/.well-known/openpgpkey/example.org/policy
 # Substitute the HASH shown by the helper; this should return binary OpenPGP data.
-curl -I 'https://example.org/.well-known/openpgpkey/hu/HASH?l=hello'
+curl -I 'https://openpgpkey.example.org/.well-known/openpgpkey/example.org/hu/HASH?l=hello'
 gpg --auto-key-locate clear,wkd --locate-keys hello@example.org
 ```
 
@@ -231,16 +245,17 @@ docker compose exec onderka-site nginx -t
 
 In NPM, create or update the proxy host:
 
-- **Domain:** `onderka.dev`
+- **Domains:** `onderka.dev` and `openpgpkey.onderka.dev` (or separate proxy hosts
+  forwarding to the same container)
 - **Scheme:** `http`
 - **Forward hostname:** `onderka-site`
 - **Forward port:** `80`
 - **Access:** publicly accessible, including the WKD paths
-- **SSL:** select your existing certificate and enable Force SSL
+- **SSL:** use valid certificates covering both hostnames and enable Force SSL
 - **Cache Assets:** leave disabled so key updates are served immediately
 
 NPM should forward the original paths to the container. The included Nginx
-configuration serves the empty WKD policy, binary keys with the appropriate MIME
+configuration serves both WKD layouts, empty policies, binary keys with the appropriate MIME
 type and CORS header, and armored downloads as plain text. It uses relative
 directory redirects to preserve HTTPS through the proxy.
 
